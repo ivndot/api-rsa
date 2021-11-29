@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 
-import io.ivndot.util.HeadersUtil;
+import io.ivndot.util.ResponseUtil;
 
 @WebServlet("/login")
 public class Login extends HttpServlet implements Servlet {
@@ -32,16 +32,16 @@ public class Login extends HttpServlet implements Servlet {
 				// user and password are correct
 				generateJSON(json, "ok", "The user and password are correct");
 			} else {
-				// the user or password is wrong
+				// ERROR: the user or password is wrong
 				generateJSON(json, "error", "The user or password is wrong");
 			}
 		} else {
-			// the parameters are empty
+			// ERROR: the parameters are empty
 			generateJSON(json, "error", "The parameters are empty");
 		}
 		
 		// CORS configuration
-		HeadersUtil.setAccessControlHeaders(resp, "POST");
+		ResponseUtil.setAccessControlHeaders(resp, "POST");
 		//send response
 		resp.setContentType("application/json");
 		resp.getOutputStream().println(json.toString());

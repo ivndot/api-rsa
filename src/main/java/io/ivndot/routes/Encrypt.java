@@ -1,117 +1,107 @@
 package io.ivndot.routes;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Scanner;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
-import javax.servlet.Servlet;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
 
-import org.json.JSONObject;
-
-import io.ivndot.util.HeadersUtil;
+import io.ivndot.beans.EncryptBean;
+import io.ivndot.util.FilesUtil;
+import io.ivndot.util.ResponseUtil;
+import io.ivndot.util.RSAUtil;
 
 @WebServlet("/encrypt")
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 1, // 1 MB
 		maxFileSize = 1024 * 1024 * 10, // 10 MB
 		maxRequestSize = 1024 * 1024 * 100 // 100 MB
 )
-public class Encrypt extends HttpServlet implements Servlet {
+public class Encrypt extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		/**
-		 * { status: " ", description: " " textEncrypted: "" }
-		 */
+
 		// get parameters
 		String textToEncrypt = req.getParameter("textToEncrypt");
-		String fileToEncrypt = req.getParameter("fileToEncrypt");
-		//String publicKeyFile = req.getParameter("publicKey");
+		String publicKey = req.getParameter("publicKey");
+		String fileToEncrypt = FilesUtil.uploadFile(req, getServletContext().getRealPath(""), "fileToEncrypt");
 
-		// json object to send result
-		JSONObject json = new JSONObject();
+		// java bean to send the response
+		EncryptBean encryptBean = null;
 
-		// if (publicKeyFile != null) {
-		// the public key file was send
-		if (fileToEncrypt != null) {
-			// encrypt the content of a file
-			System.out.println("SI hay archivo");
-			// get the file to read its content
-			File file = uploadFile(req, "fileToEncrypt");
+		if (publicKey != null && !publicKey.equals("")) {
+			// the public key file was upload successfully
 
-			if (file != null) {
-				// the file was upload succesfully
+			// content that will be encrypted
+			String content = null;
+			// encrypted content
+			String encryptedContent = null;
 
-				// read the content of the file
-				String content = readFile(file);
+			if (fileToEncrypt != null) {
+				// the file to encrypt was upload successfully
+				// encrypt file content
 
-				System.out.println("Contenido: " + content);
+				// get the content of the file
+				content = FilesUtil.readFile(fileToEncrypt);
+
+			} else if (textToEncrypt != null && !textToEncrypt.equals("")) {
+				// encrypt text
+
+				// get the sent text encoded in base64
+				content = new String(Base64.getDecoder().decode(textToEncrypt));
 
 			} else {
-				// the file could not upload
-				System.out.println("the file could not upload");
+				// ERROR: there is no content to encrypt
+				encryptBean = new EncryptBean("error", "There is no content to encrypt", "");
+
+				// send response
+				ResponseUtil.sendJSONResponse(resp, encryptBean);
+
+				System.out.println("ERROR: there is no content to encrypt");
 			}
 
-		} else if (textToEncrypt != null) {
-			// encrypt the send text
-			System.out.println("no hay archivo");
+			try {
+				// encrypt the content
+				encryptedContent = RSAUtil.encrypt(content, publicKey);
+
+				// bean
+				encryptBean = new EncryptBean("ok", "Correctly encrypted content", encryptedContent);
+
+			} catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException
+					| NoSuchAlgorithmException e) {
+				// ERROR: there was an error encrypting the content
+				e.printStackTrace();
+
+				// bean
+				encryptBean = new EncryptBean("error", "There was an error encrypting the content", "");
+			}
+
+		} else {
+			// ERROR: there was an error with the public key
+
+			// bean
+			encryptBean = new EncryptBean("error", "No public key sent", "");
 		}
-		// }
+
+		// delete file
+		Files.deleteIfExists(Paths.get(fileToEncrypt));
 
 		// send response
-		resp.setContentType("application/json");
-		resp.getOutputStream().println(json.toString());
-		// CORS configuration
-		HeadersUtil.setAccessControlHeaders(resp, "POST");
+		ResponseUtil.sendJSONResponse(resp, encryptBean);
+
 	}
 
-	public static String readFile(File file) {
-		String fileName = file.getAbsolutePath();
-		Path filePath = Paths.get(fileName);
-
-		String content = null;
-		try {
-			content = Files.readString(filePath);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return content;
-	}
-
-	private File uploadFile(HttpServletRequest req, String parameterName) {
-		try {
-			// create file and set the path where will be saved
-			String uploadPath = getServletContext().getRealPath("");
-			File generatedFile = new File(uploadPath);
-			if (!generatedFile.exists())
-				generatedFile.mkdir();
-
-			// write into the file
-			Part filePart = req.getPart(parameterName);
-			String fileName = filePart.getSubmittedFileName();
-			for (Part part : req.getParts()) {
-				part.write(uploadPath + File.separator + fileName);
-			}
-			return generatedFile;
-		} catch (IOException e) {
-			System.out.println(e);
-			return null;
-		} catch (ServletException se) {
-			System.out.println(se);
-			return null;
-		}
-	}
 }

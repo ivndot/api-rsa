@@ -11,7 +11,7 @@ import java.util.Scanner;
 public class Test {
 	
 	public static void main(String[] args) {
-		File file = new File("/home/ivn/Desktop/private.key");
+		File file = new File("/home/ivn/Desktop/test.txt");
 		String info = readFile(file);
 		System.out.println(info);
 	}

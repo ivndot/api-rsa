@@ -8,11 +8,17 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
 public class FilesUtil {
 
@@ -22,7 +28,7 @@ public class FilesUtil {
 	 **************************************************************************/
 	/**
 	 * 
-	 * @param fileName Files's name
+	 * @param fileName Files's name, returns the file created
 	 * @param key      Public or private key encoded
 	 * @return File
 	 */
@@ -45,6 +51,7 @@ public class FilesUtil {
 	 * FUNCTION
 	 **************************************************************************/
 	/**
+	 * Function to create a file, returns the file's created
 	 * 
 	 * @param fileName Files's name
 	 * @param content  Content to be written into the file
@@ -67,8 +74,26 @@ public class FilesUtil {
 	 **************************************************************************
 	 * FUNCTION
 	 **************************************************************************/
-	public static String readFile(String path) {
-		return "";
+	/**
+	 * Function to read a file, returns the content of the file
+	 * 
+	 * @param fileName The file's name
+	 * @return String
+	 */
+	public static String readFile(String fileName) {
+		System.out.println("----------------------");
+		System.out.println("PATH : " + fileName);
+		System.out.println("----------------------");
+		Path filePath = Paths.get(fileName);
+
+		String content = null;
+		try {
+			content = Files.readString(filePath);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("THERE WAS AN ERROR READING THE CONTENT OF THE FILE");
+		}
+		return content;
 	}
 
 	/*
@@ -76,7 +101,7 @@ public class FilesUtil {
 	 * FUNCTION
 	 **************************************************************************/
 	/**
-	 * Function to zip multiple files
+	 * Function to zip multiple files, return the ziped file
 	 * 
 	 * @param files    List of files
 	 * @param fileName File's name
@@ -129,7 +154,7 @@ public class FilesUtil {
 	 * FUNCTION
 	 **************************************************************************/
 	/**
-	 * Send file to the client
+	 * Function to send a file to the client
 	 * 
 	 * @param resp     HttpServlet response
 	 * @param fileName Files's name
@@ -148,7 +173,7 @@ public class FilesUtil {
 		resp.addHeader("Content-Disposition", "attachment; filename=" + fileName);
 		resp.setContentLength((int) file.length());
 		// CORS configuration
-		HeadersUtil.setAccessControlHeaders(resp, "GET");
+		ResponseUtil.setAccessControlHeaders(resp, "GET");
 
 		fileInputStream = new FileInputStream(file);
 		responseOutputStream = resp.getOutputStream();
@@ -161,4 +186,40 @@ public class FilesUtil {
 		responseOutputStream.close();
 	}
 
+	/*
+	 **************************************************************************
+	 * FUNCTION
+	 **************************************************************************/
+	/**
+	 * Function to upload a file to the server, returns the file's name
+	 * 
+	 * @param req            HttpServletRequest
+	 * @param servletContext Servlet context
+	 * @param parameterName  The name of the parameter
+	 * @return String
+	 */
+	public static String uploadFile(HttpServletRequest req, String servletContext, String parameterName) {
+		try {
+			// create file and set the path where will be saved
+			String uploadPath = servletContext;
+			File generatedFile = new File(uploadPath);
+			if (!generatedFile.exists())
+				generatedFile.mkdir();
+
+			// write into the file
+			Part filePart = req.getPart(parameterName);
+			String fileName = filePart.getSubmittedFileName();
+			for (Part part : req.getParts()) {
+				part.write(uploadPath + fileName);
+			}
+			return (uploadPath + fileName);
+		} catch (IOException e) {
+			System.out.println(e);
+			return null;
+		} catch (ServletException se) {
+			System.out.println(se);
+			return null;
+		}
+	}
+	
 }

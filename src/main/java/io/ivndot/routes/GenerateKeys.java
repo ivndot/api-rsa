@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Base64;
 
 import io.ivndot.util.FilesUtil;
-import io.ivndot.util.RSAKeysUtil;
+import io.ivndot.util.RSAUtil;
 
 @WebServlet("/generate-keys")
 public class GenerateKeys extends HttpServlet implements Servlet {
@@ -25,7 +25,7 @@ public class GenerateKeys extends HttpServlet implements Servlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		// generate pair of keys
-		RSAKeysUtil keys = new RSAKeysUtil();
+		RSAUtil keys = new RSAUtil();
 
 		// file's names
 		String publicKeyName = "public.key";
@@ -52,21 +52,25 @@ public class GenerateKeys extends HttpServlet implements Servlet {
 				// send to the client
 				FilesUtil.sendFile(resp, fileZipName, zip, "zip");
 				// delete file
-				zip.delete();
+				if (zip.exists())
+					zip.delete();
 
 			} catch (Exception ex) {
+				// ERROR: the file could not be sent
 				System.out.println("Error sending file");
 				ex.printStackTrace();
 			}
 
 		} else {
-			// there was an error creating or writing into the files
-			System.out.println("Null file");
+			// ERROR: there was an error creating or writing into the files
+			System.out.println("Error creating the file");
 		}
 
 		// delete files
-		privateKeyFile.delete();
-		publicKeyFile.delete();
+		if (privateKeyFile.exists())
+			privateKeyFile.delete();
+		if (publicKeyFile.exists())
+			publicKeyFile.delete();
 	}
 
 }

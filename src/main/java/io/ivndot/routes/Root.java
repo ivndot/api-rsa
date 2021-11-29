@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 
-import io.ivndot.util.HeadersUtil;
+import io.ivndot.util.ResponseUtil;
 
 @WebServlet("/")
 public class Root extends HttpServlet implements Servlet {
@@ -24,7 +24,7 @@ public class Root extends HttpServlet implements Servlet {
 		json.put("apiRSAVersion", 1.0);
 		
 		// CORS configuration
-		HeadersUtil.setAccessControlHeaders(resp, "GET");
+		ResponseUtil.setAccessControlHeaders(resp, "GET");
 		
 		//send response
 		resp.setContentType("application/json");
