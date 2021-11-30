@@ -96,8 +96,9 @@ public class Encrypt extends HttpServlet {
 		}
 
 		// delete file
-		if (fileToEncrypt.exists())
-			fileToEncrypt.delete();
+		if (fileToEncrypt != null)
+			if (fileToEncrypt.exists())
+				fileToEncrypt.delete();
 
 		// send response
 		ResponseUtil.sendJSONResponse(resp, encryptBean, "POST");

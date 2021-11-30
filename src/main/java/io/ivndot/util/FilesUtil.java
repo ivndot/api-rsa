@@ -25,30 +25,6 @@ public class FilesUtil {
 	 * FUNCTION
 	 **************************************************************************/
 	/**
-	 * 
-	 * @param fileName Files's name, returns the file created
-	 * @param key      Public or private key encoded
-	 * @return File
-	 */
-	public static File createFile(String fileName, byte[] key) {
-		try {
-			File file = new File(fileName);
-			FileOutputStream fos = new FileOutputStream(file);
-			fos.write(key);
-			fos.flush();
-			fos.close();
-			return file;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	/*
-	 **************************************************************************
-	 * FUNCTION
-	 **************************************************************************/
-	/**
 	 * Function to create a file, returns the file's created
 	 * 
 	 * @param fileName Files's name
@@ -180,7 +156,7 @@ public class FilesUtil {
 		OutputStream responseOutputStream = null;
 
 		// modify the header 'content type' depending on file's type
-		String contentType = "application/" + (type == "zip" ? "zip" : "octet-stream");
+		String contentType = "application/" + (type == "zip" ? "zip" : type == "txt" ? "octet-stream" : "");
 
 		resp.setContentType(contentType);
 		resp.addHeader("Content-Disposition", "attachment; filename=" + fileName);
