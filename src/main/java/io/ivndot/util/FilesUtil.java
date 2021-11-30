@@ -8,10 +8,8 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
+import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -77,23 +75,38 @@ public class FilesUtil {
 	/**
 	 * Function to read a file, returns the content of the file
 	 * 
-	 * @param fileName The file's name
+	 * @param file The file that will be read
 	 * @return String
 	 */
-	public static String readFile(String fileName) {
-		System.out.println("----------------------");
-		System.out.println("PATH : " + fileName);
-		System.out.println("----------------------");
-		Path filePath = Paths.get(fileName);
+	public static String readFile(File file) {
 
-		String content = null;
+		System.out.println("====================");
+		System.out.println("PATH: " + file.getName());
+		System.out.println("====================");
+		StringBuilder sb = null;
+
 		try {
-			content = Files.readString(filePath);
-		} catch (IOException e) {
+			Scanner reader = new Scanner(file);
+			sb = new StringBuilder();
+			while (reader.hasNextLine()) {
+				sb.append(reader.nextLine());
+				// add line separator if another line exists
+				if (reader.hasNextLine())
+					sb.append(System.lineSeparator());
+			}
+			reader.close();
+		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("THERE WAS AN ERROR READING THE CONTENT OF THE FILE");
+			return null;
 		}
-		return content;
+
+		System.out.println("====================");
+		System.out.println(sb.toString());
+		System.out.println("====================");
+
+		return sb.toString();
+
 	}
 
 	/*
@@ -191,20 +204,21 @@ public class FilesUtil {
 	 * FUNCTION
 	 **************************************************************************/
 	/**
-	 * Function to upload a file to the server, returns the file's name
+	 * Function to upload a file to the server, returns the name of the created file
 	 * 
 	 * @param req            HttpServletRequest
 	 * @param servletContext Servlet context
 	 * @param parameterName  The name of the parameter
-	 * @return String
+	 * @return File
 	 */
-	public static String uploadFile(HttpServletRequest req, String servletContext, String parameterName) {
+	public static File uploadFile(HttpServletRequest req, String servletContext, String parameterName) {
 		try {
 			// create file and set the path where will be saved
 			String uploadPath = servletContext;
-			File generatedFile = new File(uploadPath);
-			if (!generatedFile.exists())
-				generatedFile.mkdir();
+			/*
+			 * File generatedFile = new File(uploadPath); if (!generatedFile.exists())
+			 * generatedFile.mkdir();
+			 */
 
 			// write into the file
 			Part filePart = req.getPart(parameterName);
@@ -212,7 +226,7 @@ public class FilesUtil {
 			for (Part part : req.getParts()) {
 				part.write(uploadPath + fileName);
 			}
-			return (uploadPath + fileName);
+			return new File(uploadPath + fileName);
 		} catch (IOException e) {
 			System.out.println(e);
 			return null;
@@ -221,5 +235,5 @@ public class FilesUtil {
 			return null;
 		}
 	}
-	
+
 }

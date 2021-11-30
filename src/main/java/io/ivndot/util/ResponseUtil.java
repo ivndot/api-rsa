@@ -23,15 +23,17 @@ public class ResponseUtil {
 	/**
 	 * Function to send the response in JSON to the client
 	 * 
-	 * @param resp HttpServletResponse
-	 * @param bean Object (bean) with properties that will be parse into JSON
+	 * @param resp    HttpServletResponse
+	 * @param bean    Object (bean) with properties that will be parse into JSON
+	 * @param methods Allowing methods
 	 */
-	public static void sendJSONResponse(HttpServletResponse resp, Object bean) {
+	public static void sendJSONResponse(HttpServletResponse resp, Object bean, String methods) {
 
 		try {
+			// content type
 			resp.setContentType("application/json");
 			// CORS configuration
-			ResponseUtil.setAccessControlHeaders(resp, "POST");
+			ResponseUtil.setAccessControlHeaders(resp, methods);
 			// send response
 			resp.getOutputStream().println(new JSONObject(bean).toString());
 		} catch (IOException e) {

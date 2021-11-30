@@ -1,8 +1,7 @@
 package io.ivndot.routes;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -37,7 +36,7 @@ public class Encrypt extends HttpServlet {
 		// get parameters
 		String textToEncrypt = req.getParameter("textToEncrypt");
 		String publicKey = req.getParameter("publicKey");
-		String fileToEncrypt = FilesUtil.uploadFile(req, getServletContext().getRealPath(""), "fileToEncrypt");
+		File fileToEncrypt = FilesUtil.uploadFile(req, getServletContext().getRealPath(""), "fileToEncrypt");
 
 		// java bean to send the response
 		EncryptBean encryptBean = null;
@@ -65,10 +64,10 @@ public class Encrypt extends HttpServlet {
 
 			} else {
 				// ERROR: there is no content to encrypt
-				encryptBean = new EncryptBean("error", "There is no content to encrypt", "");
+				encryptBean = new EncryptBean(200, "error", "There is no content to encrypt", "");
 
 				// send response
-				ResponseUtil.sendJSONResponse(resp, encryptBean);
+				ResponseUtil.sendJSONResponse(resp, encryptBean, "POST");
 
 				System.out.println("ERROR: there is no content to encrypt");
 			}
@@ -78,7 +77,7 @@ public class Encrypt extends HttpServlet {
 				encryptedContent = RSAUtil.encrypt(content, publicKey);
 
 				// bean
-				encryptBean = new EncryptBean("ok", "Correctly encrypted content", encryptedContent);
+				encryptBean = new EncryptBean(100, "ok", "Correctly encrypted content", encryptedContent);
 
 			} catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException
 					| NoSuchAlgorithmException e) {
@@ -86,21 +85,22 @@ public class Encrypt extends HttpServlet {
 				e.printStackTrace();
 
 				// bean
-				encryptBean = new EncryptBean("error", "There was an error encrypting the content", "");
+				encryptBean = new EncryptBean(201, "error", "There was an error encrypting the content", "");
 			}
 
 		} else {
 			// ERROR: there was an error with the public key
 
 			// bean
-			encryptBean = new EncryptBean("error", "No public key sent", "");
+			encryptBean = new EncryptBean(202, "error", "No public key sent", "");
 		}
 
 		// delete file
-		Files.deleteIfExists(Paths.get(fileToEncrypt));
+		if (fileToEncrypt.exists())
+			fileToEncrypt.delete();
 
 		// send response
-		ResponseUtil.sendJSONResponse(resp, encryptBean);
+		ResponseUtil.sendJSONResponse(resp, encryptBean, "POST");
 
 	}
 
