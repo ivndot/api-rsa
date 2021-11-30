@@ -52,8 +52,9 @@ public class GenerateKeys extends HttpServlet implements Servlet {
 				// send to the client
 				FilesUtil.sendFile(resp, fileZipName, zip, "zip");
 				// delete file
-				if (zip.exists())
-					zip.delete();
+				if (zip != null)
+					if (zip.exists())
+						zip.delete();
 
 			} catch (Exception ex) {
 				// ERROR: the file could not be sent
@@ -67,10 +68,12 @@ public class GenerateKeys extends HttpServlet implements Servlet {
 		}
 
 		// delete files
-		if (privateKeyFile.exists())
-			privateKeyFile.delete();
-		if (publicKeyFile.exists())
-			publicKeyFile.delete();
+		if (privateKeyFile != null)
+			if (privateKeyFile.exists())
+				privateKeyFile.delete();
+		if (publicKeyFile != null)
+			if (publicKeyFile.exists())
+				publicKeyFile.delete();
 	}
 
 }

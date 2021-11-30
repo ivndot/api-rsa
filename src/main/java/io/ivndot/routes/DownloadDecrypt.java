@@ -14,32 +14,31 @@ import org.json.JSONObject;
 import io.ivndot.util.FilesUtil;
 import io.ivndot.util.ResponseUtil;
 
-@WebServlet("/download-encrypted-text")
-public class DownloadEncrypt extends HttpServlet {
+@WebServlet("/download-decrypted-text")
+public class DownloadDecrypt extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		// get decrypted text
+		String originalText = req.getParameter("originalText");
 
-		// get encrypted text
-		String encryptedText = req.getParameter("encryptedText");
-
-		if (encryptedText != null && !encryptedText.isEmpty()) {
+		if (originalText != null && !originalText.isEmpty()) {
 			// there is text to download
 
 			// create file
-			File file = FilesUtil.createFile("cifrado.rsa", encryptedText);
+			File file = FilesUtil.createFile("descifrado.rsa", originalText);
 
 			// send file to client
-			FilesUtil.sendFile(resp, "cifrado.rsa", file, "txt");
+			FilesUtil.sendFile(resp, "descifrado.rsa", file, "txt");
 
 			// delete file
 			if (file != null)
 				if (file.exists())
 					file.delete();
 		} else {
-			// ERROR: there is no encrypted text to download
+			// ERROR: there is no decrypted text to download
 
 			// JSON object
 			JSONObject obj = new JSONObject();
@@ -53,7 +52,6 @@ public class DownloadEncrypt extends HttpServlet {
 			// send response
 			resp.getOutputStream().println(obj.toString());
 		}
-
 	}
 
 }

@@ -2,6 +2,7 @@ package io.ivndot.util;
 
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
@@ -101,6 +102,32 @@ public class RSAUtil {
 	 * FUNCTION
 	 **************************************************************************/
 	/**
+	 * Function to regenerate the private key encoded in base64 saved in a file,
+	 * returns the private key
+	 * 
+	 * @param base64PrivateKey Private key string encoded in base64
+	 * @return PrivateKey
+	 */
+	public static PrivateKey regeneratePrivateKey(String base64PrivateKey) {
+		PrivateKey privateKey = null;
+		try {
+			PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(
+					Base64.getDecoder().decode(base64PrivateKey.getBytes()));
+			KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+			privateKey = keyFactory.generatePrivate(keySpec);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (InvalidKeySpecException e) {
+			e.printStackTrace();
+		}
+		return privateKey;
+	}
+
+	/*
+	 **************************************************************************
+	 * FUNCTION
+	 **************************************************************************/
+	/**
 	 * Function to encrypt text, returns the encrypted content encoded in base64
 	 * 
 	 * @param content   Text to be encrypted
@@ -124,6 +151,39 @@ public class RSAUtil {
 		String encodedContent = Base64.getEncoder().encodeToString(encryptedContent);
 
 		return encodedContent;
+	}
+
+	/*
+	 **************************************************************************
+	 * FUNCTION
+	 **************************************************************************/
+	/**
+	 * Function to decrypt text, returns the original message
+	 * 
+	 * @param content    Text to be decrypted encoded in base64
+	 * @param privateKey Base64 encoded private key
+	 * @return String
+	 * @throws IllegalBlockSizeException
+	 * @throws InvalidKeyException
+	 * @throws BadPaddingException
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
+	 */
+	public static String decrypt(String content, String privateKey) throws IllegalBlockSizeException,
+			InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
+
+		Cipher cipher = Cipher.getInstance("RSA");
+		// initialize the decryption
+		cipher.init(Cipher.DECRYPT_MODE, regeneratePrivateKey(privateKey));
+		// decode text from base64
+		byte[] decodedText = Base64.getDecoder().decode(content.getBytes());
+		
+		// get the original message
+		String messg = new String(cipher.doFinal(decodedText));
+		System.out.println("======ORIGINAL TEXT=======");
+		System.out.println(messg);
+		System.out.println("======ORIGINAL TEXT=======");
+		return messg;
 	}
 
 }
