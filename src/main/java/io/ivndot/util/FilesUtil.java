@@ -199,10 +199,17 @@ public class FilesUtil {
 			// write into the file
 			Part filePart = req.getPart(parameterName);
 			String fileName = filePart.getSubmittedFileName();
-			for (Part part : req.getParts()) {
-				part.write(uploadPath + fileName);
+
+			if (fileName != null) {
+				// there is a file with name
+				for (Part part : req.getParts()) {
+					part.write(uploadPath + fileName);
+				}
+				return new File(uploadPath + fileName);
+			} else {
+				// there is no file's name
+				return null;
 			}
-			return new File(uploadPath + fileName);
 		} catch (IOException e) {
 			System.out.println(e);
 			return null;

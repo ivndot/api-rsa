@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -37,7 +36,7 @@ public class Encrypt extends HttpServlet {
 		String textToEncrypt = req.getParameter("textToEncrypt");
 		String publicKey = req.getParameter("publicKey");
 		File fileToEncrypt = FilesUtil.uploadFile(req, getServletContext().getRealPath(""), "fileToEncrypt");
-
+		System.out.println("TEXT:" + textToEncrypt);
 		// java bean to send the response
 		EncryptBean encryptBean = null;
 
@@ -60,7 +59,7 @@ public class Encrypt extends HttpServlet {
 				// encrypt text
 
 				// get the sent text encoded in base64
-				content = new String(Base64.getDecoder().decode(textToEncrypt));
+				content = textToEncrypt;
 
 			} else {
 				// ERROR: there is no content to encrypt

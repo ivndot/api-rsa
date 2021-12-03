@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -60,7 +59,7 @@ public class Decrypt extends HttpServlet {
 				// decrypt text
 
 				// get the sent text encoded in base64
-				content = new String(Base64.getDecoder().decode(textToDecrypt));
+				content = textToDecrypt;
 
 			} else {
 				// ERROR: there is no content to decrypt
