@@ -69,7 +69,7 @@
 					<configuration>
 						<failOnMissingWebXml>false</failOnMissingWebXml>
 						<warName>api-rsa</warName>
-						<outputDirectory>/home/ivn/apache-tomcat-8.5.66/webapps</outputDirectory>
+<!-- 						<outputDirectory>${env.OUTPUT_DIRECTORY}</outputDirectory> -->
 					</configuration>
 				</plugin>
 				<plugin>
